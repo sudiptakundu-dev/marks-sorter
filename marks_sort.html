@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Marks Sorter</title>
+    <style>
+        :root {
+            --primary: rgb(81, 0, 174);
+            --bg: rgb(245, 240, 255);
+            --card: white;
+            --text: #333;
+        }
+
+        .dark-mode {
+            --bg: rgb(10, 0, 30);
+            --card: rgb(24, 10, 55);
+            --text: #ffffff;
+        }
+
+        /* RESET: This stops Live Server from breaking your spacing */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+            justify-items: center;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .main-wrapper {
+            width: 95%;
+            max-width: 800px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background-color: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            background-color: var(--card);
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            border: 1px solid var(--primary);
+        }
+
+        #dynamicContent input {
+            border: none;
+            border-radius: 0;
+        }
+
+        #dynamicContent input:focus {
+            border: none;
+            outline: 1px solid var(--primary);
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn-green { background: #28a745; width: 100%; margin: 10px 0; }
+        .btn-blue { background: steelblue; }
+        .btn-red { background: #dc3545; }
+
+        .btn-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #dynamicContent td {
+            padding: 0;            
+        }
+
+        th { background: var(--primary); color: white; }
+
+        .side-bar {
+            position: fixed;
+            top: 80%;
+            right: 30px;
+        }
+
+        .theme-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            border: 2px solid white;
+            padding: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="side-bar">
+        <button class="theme-btn" onclick="document.body.classList.toggle('dark-mode')">🌙</button>
+    </div>
+
+<header>
+    <h1>Student Marks Sorter</h1>
+</header>
+
+<div class="main-wrapper">
+    <div class="card">
+        <div class="input-row">
+            <label>Total Students:</label>
+            <input type="number" id="numStudents" value="5">
+        </div>
+        <div class="input-row">
+            <label>Total Marks:</label>
+            <input type="number" id="maxMarks" value="100">
+        </div>
+        
+        <button class="btn btn-green" onclick="startApp()">Generate Table</button>
+
+        <div id="dynamicContent">
+            </div>
+        
+        <div id="resultContent"></div>
+    </div>
+    <div>
+        
+    </div>
+</div>
+
+<script>
+    function startApp() {
+        const count = parseInt(document.getElementById('numStudents').value);
+        const limit = parseInt(document.getElementById('maxMarks').value);
+
+        if(!count || !limit) return alert("Please enter valid numbers");
+
+        const container = document.getElementById('dynamicContent');
+        const resultArea = document.getElementById('resultContent');
+        resultArea.innerHTML = ""; // Clear results
+
+        container.innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Student Name</th><th>Marks</th></tr>
+                </thead>
+                <tbody id="mainBody"></tbody>
+            </table>
+            <div class="btn-container">
+                <button class="btn btn-blue" onclick="addRow()">Add Row</button>
+                <button class="btn btn-red" onclick="removeRow()">Remove Row</button>
+                <button class="btn btn-blue" onclick="sortData(${limit})">Sort Marks</button>
+            </div>
+        `;
+
+        for(let i=1; i<=count; i++) addRow();
+    }
+
+    function addRow() {
+        const tbody = document.getElementById('mainBody');
+        if(!tbody) return;
+        const rowNum = tbody.rows.length + 1;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${rowNum}</td>
+            <td><input type="text" class="s-name"></td>
+            <td><input type="number" class="s-mark"></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function removeRow() {
+        const tbody = document.getElementById('mainBody');
+        if(tbody && tbody.rows.length > 1) tbody.deleteRow(-1);
+    }
+
+    function sortData(limit) {
+        const names = document.querySelectorAll('.s-name');
+        const marks = document.querySelectorAll('.s-mark');
+        let students = [];
+
+        for(let i=0; i<names.length; i++) {
+            const n = names[i].value.trim();
+            const m = parseFloat(marks[i].value);
+
+            if(!n || isNaN(m)) return alert("Fill all fields");
+            if(m > limit) return alert(n + " exceeds max marks!");
+
+            students.push({ name: n, mark: m });
+        }
+
+        students.sort((a, b) => b.mark - a.mark);
+        renderFinal(students);
+    }
+
+    function renderFinal(data) {
+        const area = document.getElementById('resultContent');
+        area.innerHTML = `<h2 style="margin:20px 0; text-align:center;">Results</h2>`;
+        
+        const table = document.createElement('table');
+        table.id = "finalTable";
+        table.innerHTML = `<tr><th>Rank</th><th>Name</th><th>Mark</th></tr>`;
+        
+        data.forEach((s, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${i+1}</td><td>${s.name}</td><td>${s.mark}</td>`;
+            table.appendChild(tr);
+        });
+        
+        area.appendChild(table);
+
+        const exBtn = document.createElement('button');
+        exBtn.className = "btn btn-blue";
+        exBtn.style.width = "100%";
+        exBtn.style.marginTop = "15px";
+        exBtn.innerText = "Export to Word (.doc)";
+        exBtn.onclick = () => {
+            const style = "<style>table{border-collapse:collapse; width:100%;} th,td{border:1px solid black; padding:10px;} th{background:#7f00ae; color:white;}</style>";
+            const blob = new Blob(['\ufeff', style + table.outerHTML], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Marks_Report.doc';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+        area.appendChild(exBtn);
+    }
+</script>
+</body>
+</html>
